@@ -15,6 +15,7 @@ public class Product {
     private String name;
     private String description;
     private Double price;
+    private Integer stock;
     private Long sellerId;
 
     public Long getId() {
@@ -47,6 +48,14 @@ public class Product {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
     }
 
     public Long getSellerId() {
