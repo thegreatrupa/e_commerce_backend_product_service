@@ -1,27 +1,34 @@
 package com.example.product_service.controller;
 
+import com.example.product_service.dto.ProductResponse;
 import com.example.product_service.entity.Product;
 import com.example.product_service.service.ProductService;
+import com.example.product_service.util.ProductMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 @RestController
 @RequestMapping("/products")
 public class ProductController {
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, ProductMapper productMapper) {
         this.productService = productService;
+        this.productMapper = productMapper;
     }
 
     @PostMapping
-    public Product create(@RequestBody Product product,
-                          @RequestHeader("X-User-Id") String userId) {
+    public ResponseEntity<ProductResponse> create(@RequestBody Product product,
+                                  @RequestHeader("X-User-Id") String userId) {
         Long sellerId = Long.valueOf(userId);
-        return productService.save(product, sellerId);
+        Product savedProduct = productService.save(product, sellerId);
+        return ResponseEntity.ok(productMapper.toResponse(savedProduct));
     }
 
     @GetMapping
@@ -35,24 +42,30 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id,
+    public ResponseEntity<Void> delete(@PathVariable Long id,
                        @RequestHeader("X-User-Id") String userId) {
         Long sellerId = Long.valueOf(userId);
         productService.delete(id, sellerId);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
-    public Product update(@PathVariable Long id,
+    public ResponseEntity<ProductResponse> update(@PathVariable Long id,
                           @RequestBody Product product,
                           @RequestHeader("X-User-Id") String userId) {
         Long sellerId = Long.valueOf(userId);
-        return productService.updateProduct(id, product, sellerId);
+        Product updatedProduct = productService.updateProduct(id, product, sellerId);
+        return ResponseEntity.ok(productMapper.toResponse(updatedProduct));
     }
 
     @GetMapping("/seller")
-    public List<Product> getSellerProducts(@RequestHeader("X-User-Id") String userId) {
+    public ResponseEntity<List<ProductResponse>> getSellerProducts(@RequestHeader("X-User-Id") String userId) {
         Long sellerId = Long.valueOf(userId);
-        return productService.getSellerProducts(sellerId);
+        List<Product> productList = productService.getSellerProducts(sellerId);
+        return ResponseEntity.ok(
+                productList.stream()
+                        .map(productMapper::toResponse).toList()
+        );
     }
 
     @PostMapping("/{id}/decrement")
