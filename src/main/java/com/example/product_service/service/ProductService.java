@@ -1,6 +1,8 @@
 package com.example.product_service.service;
 
 import com.example.product_service.entity.Product;
+import com.example.product_service.exception.ForbiddenException;
+import com.example.product_service.exception.ResourceNotFoundException;
 import com.example.product_service.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,18 +24,21 @@ public class ProductService {
     }
 
     public List<Product> findAll(){
-        return productRepository.findAll();
+        return productRepository.findByStockGreaterThan(0);
     }
-    public Product findById(Long id){
-        return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+    public Product findById(Long id, boolean forUser){
+        Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if(forUser && product.getStock() == 0) throw new ResourceNotFoundException("Product not found");
+        return product;
     }
 
     public Product updateProduct(Long id, Product updated, Long sellerId) {
         Product existing = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (!existing.getSellerId().equals(sellerId)) {
-            throw new RuntimeException("You are not allowed to update this product");
+            throw new ForbiddenException("You are not allowed to update this product");
         }
 
         existing.setName(updated.getName());
@@ -46,10 +51,10 @@ public class ProductService {
 
     public void delete(Long id, Long sellerId){
         Product existing = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (!existing.getSellerId().equals(sellerId)) {
-            throw new RuntimeException("You are not allowed to delete this product");
+            throw new ForbiddenException("You are not allowed to delete this product");
         }
 
         productRepository.deleteById(id);

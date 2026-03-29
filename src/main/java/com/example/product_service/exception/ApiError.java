@@ -15,9 +15,9 @@ public class ApiError {
         this.timeStamp = Instant.now();
     }
 
-//    public int getStatus() { return status; }
-//    public String getMessage() { return message; }
-//    public String getErrorCode() { return errorCode; }
-//    public Instant getTimeStamp() { return timeStamp; }
+    public int getStatus() { return status; }
+    public String getMessage() { return message; }
+    public String getErrorCode() { return errorCode; }
+    public Instant getTimeStamp() { return timeStamp; }
 }
 
