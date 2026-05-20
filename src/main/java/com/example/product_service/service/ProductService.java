@@ -5,6 +5,7 @@ import com.example.product_service.exception.ForbiddenException;
 import com.example.product_service.exception.ResourceNotFoundException;
 import com.example.product_service.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class ProductService {
         return product;
     }
 
+    @PreAuthorize("hasRole('USER')")
     public Product updateProduct(Long id, Product updated, Long sellerId) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -44,6 +46,7 @@ public class ProductService {
         existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
         existing.setPrice(updated.getPrice());
+        existing.setStock(updated.getStock());
 
         return productRepository.save(existing);
     }
